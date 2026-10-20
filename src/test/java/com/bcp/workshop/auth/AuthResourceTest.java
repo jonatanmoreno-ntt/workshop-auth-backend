@@ -49,10 +49,32 @@ class AuthResourceTest {
     }
 
     @Test
+    void returns400WhenUsernameIsBlank() {
+        given()
+                .contentType("application/json")
+                .body("{\"username\":\"   \",\"password\":\"Workshop123!\",\"client\":\"angular-workshop\"}")
+                .when().post("/auth/login")
+                .then()
+                .statusCode(400)
+                .body("message", is("Username is required"));
+    }
+
+    @Test
     void returns400WhenPasswordIsMissing() {
         given()
                 .contentType("application/json")
                 .body("{\"username\":\"student\",\"client\":\"angular-workshop\"}")
+                .when().post("/auth/login")
+                .then()
+                .statusCode(400)
+                .body("message", is("Password is required"));
+    }
+
+    @Test
+    void returns400WhenPasswordIsBlank() {
+        given()
+                .contentType("application/json")
+                .body("{\"username\":\"student\",\"password\":\" \",\"client\":\"angular-workshop\"}")
                 .when().post("/auth/login")
                 .then()
                 .statusCode(400)
@@ -75,6 +97,18 @@ class AuthResourceTest {
         given()
                 .contentType("application/json")
                 .body("{\"username\":\"student\",\"password\":\"Workshop123!\",\"client\":\"angular-workshop\"}")
+                .when().post("/auth/login")
+                .then()
+                .statusCode(200)
+                .body("user.username", is("student"))
+                .body("token", notNullValue());
+    }
+
+    @Test
+    void logsInWithoutOptionalClientField() {
+        given()
+                .contentType("application/json")
+                .body("{\"username\":\"student\",\"password\":\"Workshop123!\"}")
                 .when().post("/auth/login")
                 .then()
                 .statusCode(200)

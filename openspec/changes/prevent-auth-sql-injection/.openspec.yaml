@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-10-21
+goal: Definir requisitos verificables para rechazar intentos de inyección SQL y
+  preservar el comportamiento de autenticación documentado.

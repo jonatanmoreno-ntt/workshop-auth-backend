@@ -18,6 +18,8 @@ import javax.crypto.spec.SecretKeySpec;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -42,6 +44,28 @@ class AuthResourceTest {
         given()
                 .contentType("application/json")
                 .body("{\"password\":\"Workshop123!\",\"client\":\"angular-workshop\"}")
+                .when().post("/auth/login")
+                .then()
+                .statusCode(400)
+                .body("message", is("Username is required"));
+    }
+
+    @Test
+    void returns400WhenUsernameIsNull() {
+        given()
+                .contentType("application/json")
+                .body("{\"username\":null,\"password\":\"Workshop123!\",\"client\":\"angular-workshop\"}")
+                .when().post("/auth/login")
+                .then()
+                .statusCode(400)
+                .body("message", is("Username is required"));
+    }
+
+    @Test
+    void returns400WhenUsernameIsEmpty() {
+        given()
+                .contentType("application/json")
+                .body("{\"username\":\"\",\"password\":\"Workshop123!\",\"client\":\"angular-workshop\"}")
                 .when().post("/auth/login")
                 .then()
                 .statusCode(400)
@@ -82,6 +106,28 @@ class AuthResourceTest {
     }
 
     @Test
+    void returns400WhenPasswordIsNull() {
+        given()
+                .contentType("application/json")
+                .body("{\"username\":\"student\",\"password\":null,\"client\":\"angular-workshop\"}")
+                .when().post("/auth/login")
+                .then()
+                .statusCode(400)
+                .body("message", is("Password is required"));
+    }
+
+    @Test
+    void returns400WhenPasswordIsEmpty() {
+        given()
+                .contentType("application/json")
+                .body("{\"username\":\"student\",\"password\":\"\",\"client\":\"angular-workshop\"}")
+                .when().post("/auth/login")
+                .then()
+                .statusCode(400)
+                .body("message", is("Password is required"));
+    }
+
+    @Test
     void returns401WhenCredentialsAreInvalid() {
         given()
                 .contentType("application/json")
@@ -101,7 +147,11 @@ class AuthResourceTest {
                 .then()
                 .statusCode(200)
                 .body("user.username", is("student"))
-                .body("token", notNullValue());
+                .body("token", notNullValue())
+                .body("expiresIn", notNullValue())
+                .body("user.displayName", notNullValue())
+                .body("user.role", notNullValue())
+                .body("debug", notNullValue());
     }
 
     @Test
@@ -123,7 +173,10 @@ class AuthResourceTest {
                 .body("{\"username\":\"' OR '1'='1' --\",\"password\":\"irrelevant\",\"client\":\"angular-workshop\"}")
                 .when().post("/auth/login")
                 .then()
-                .statusCode(401);
+                .statusCode(401)
+                .body("message", is("Invalid user ' OR '1'='1' -- or password"))
+                .body("$", not(hasKey("token")))
+                .body("$", not(hasKey("user")));
     }
 
     @Test

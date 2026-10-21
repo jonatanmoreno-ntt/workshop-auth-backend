@@ -98,7 +98,7 @@ class AuthResourceTest {
     void returns400WhenPasswordIsBlank() {
         given()
                 .contentType("application/json")
-                .body("{\"username\":\"student\",\"password\":\" ",\"client\":\"angular-workshop\"}")
+                .body("{\"username\":\"student\",\"password\":\" \",\"client\":\"angular-workshop\"}")
                 .when().post("/auth/login")
                 .then()
                 .statusCode(400)
